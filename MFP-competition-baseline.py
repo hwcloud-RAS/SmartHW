@@ -31,19 +31,19 @@ BitMaskFeature = namedtuple("BitMaskFeature", ['timestamp', 'err_bits_per_parity
                                                'min_err_burst_dist_per_parity', 'dq_cnt'])
 ListPointers = namedtuple('ListPointers', ['start', 'end'])
 
-# 单个Device共有4种dq报错
+# Single Device has 4 types of dq errors
 DEVICE_DQ = 4
-# 每个parity对应单个Device上的8个Burst
+# Each parity corresponds to 8 Bursts on a single Device
 DEVICE_BURST = 8
-# 最大bitmask特征列表长度
+# Maximum bitmask feature list length
 MAX_BIT_MASK_FEATURE_LIST_LEN = 100
-# bitmask特征列表长度
+# Bitmask feature list window size
 BIT_MASK_FEATURE_WINDOW_SIZE = 120 * 3600
-# 滑动时间窗口大小
+# Sliding time window size
 WINDOW_SIZE_120H = 120 * 60 * 60
-# 训练集和验证集分界线: 2024年5月1日零点
+# Training and validation set split: Midnight, May 1, 2024
 TRAIN_TEST_SPLIT_TIMESTAMP = 1714492800
-# 预测为正样本的阈值
+# Threshold for predicting positive samples
 threshold = 0.88
 
 CNT_FEATURE_READ_WINDOW_SIZE_6M = 6 * 60
@@ -67,7 +67,7 @@ CE_STORM_CNT_FEATURE_WINDOW_SIZE = WINDOW_SIZE_120H
 CE_STORM_CNT_CURRENT_FEATURE_NAME = 'CE_storm_Cnt(All,current)'
 CE_STORM_CNT_ALL_FEATURE_NAME = 'CE_storm_Cnt(All,120h)'
 
-# 第4位表示出现相邻DQ出错的组合数量
+# Fourth bit indicates the number of adjacent DQ error combinations
 CEBitMaskStatsMap = [
     (0, 4, 0, 0),  # 0: 0000
     (1, 4, 0, 0),  # 1: 0001
@@ -98,10 +98,10 @@ class RestrictedUnpickler(pickle.Unpickler):
 
     def find_class(self, module: str, name: str) -> attr:
         """
-        反序列化类型检查，只有在白名单中的类型才可正常使用
-        :param module:包的类型
-        :param name:具体包名
-        :return:如果反序列化后的类型在白名单中则返回对应类，否则抛出异常
+        # Deserialization type check, only types in the whitelist can be used normally
+        # :param module: The type of the package
+        # :param name: The specific package name
+        # :return: If the deserialized type is in the whitelist, return the corresponding class, otherwise throw an exception
         """
         builtin_info = {"builtins": builtins}
         collection_info = {"collections": collections}
@@ -138,13 +138,13 @@ class RestrictedUnpickler(pickle.Unpickler):
             open_modes: int = stat.S_IRUSR | stat.S_IWUSR,
             encoding: Optional[str] = None) -> IO:
         """
-        创建/覆盖文件，并以只写方式打开(用于写json、pickle等文件时, 替换open函数)
-        :param file_path: 待打开文件路径
-        :param is_binary: 是否以打开二进制方式打开
-        :param write_flags: 打开文件附加模式，可选 os.O_CREAT, os.O_TRUNC, os.O_APPEND 中的一个或多个组合（按位或）
-        :param open_modes: 文件权限设置
-        :param encoding: 文本文件编码，默认值为 None
-        :return: 打开后的文件 IO
+        Create/overwrite file and open it in write-only mode (to replace the open function when writing JSON, pickle, etc.)
+        :param file_path: Path to the file to be opened
+        :param is_binary: Whether to open the file in binary mode
+        :param write_flags: File opening mode, can combine one or more of os.O_CREAT, os.O_TRUNC, os.O_APPEND (bitwise OR)
+        :param open_modes: File permission settings
+        :param encoding: Text file encoding, default is None
+        :return: Opened file IO
         """
         write_mask = os.O_CREAT | os.O_TRUNC | os.O_APPEND
         open_flags = os.O_WRONLY | (write_flags & write_mask)
@@ -154,9 +154,9 @@ class RestrictedUnpickler(pickle.Unpickler):
     @staticmethod
     def write_pkl_data(saved_data, data_path: str, **kwargs) -> None:
         """
-        save pkl文件
-        :param saved_data: 要保存的数据
-        :param data_path: 数据保存路径
+        # Save pkl file
+        # :param saved_data: Data to be saved
+        # :param data_path: Path to save the data
         """
         with RestrictedUnpickler.open_file_to_write(data_path, **kwargs) as f:
             pickle.dump(saved_data, f)
@@ -164,9 +164,9 @@ class RestrictedUnpickler(pickle.Unpickler):
     @staticmethod
     def read_pkl_file(file_path: str):
         """
-        读取pkl文件
-        :param file_path: 数据读取路径
-        :return: 加载的数据
+        # Read pkl file
+        # :param file_path: Path to read the data from
+        # :return: Loaded data
         """
         if not os.path.isfile(file_path):
             raise FileNotFoundError(f"The pkl file not found in path: {file_path}")
@@ -179,9 +179,9 @@ class InputAdapter:
     @staticmethod
     def __get_dimm_loc_info(mesg: Dict) -> Tuple[str, DIMM_LOCATION]:
         """
-        获取内存条的序列号及位置信息，如sn, CpuId, DimmId等
-        :param mesg: 输入特征信息，格式为dict
-        :return: 内存sn, DIMM_LOCATION 信息
+        Get DIMM serial number and location information, such as sn, CpuId, DimmId, etc.
+        :param mesg: Input feature information, format is dict
+        :return: DIMM serial number, DIMM_LOCATION information
         """
         dimm_key = mesg["SN"]
         dimm_loc = DIMM_LOCATION(mesg["CpuId"], mesg["ChannelId"], mesg["DimmId"])
@@ -190,9 +190,9 @@ class InputAdapter:
     @staticmethod
     def __get_paras(mesg: Dict) -> Dict:
         """
-        重新解析输入特征信息，并解析出需要的格式
-        :param mesg: 输入特征信息，格式为dict
-        :return: 提取需要信息并解析出特定格式，格式为{
+        Re-parse input feature information and extract the required format
+        :param mesg: Input feature information, format is dict
+        :return: Extract the required information and parse it into a specific format, format is {
                 "host_ip":xx,
                 "dimm_type": xx,
                 "manufacturer": xx,
@@ -210,10 +210,10 @@ class InputAdapter:
     def __process_input_data(input_data: Optional[Union[List, Dict]], dimm_sn: str) -> \
             Tuple[Optional[str], Optional[DIMM_LOCATION], Optional[Dict], Optional[List]]:
         """
-        对输入特定的故障特征数据进行解析，并提取需要的格式数据
-        :param input_data:输入特征数据
-        :param dimm_sn: 内存序列号
-        :return: 解析后的新格式数据，(内存序列号, 内存位置信息, 内存属性信息, 故障日志信息)
+        Parse specific fault feature data and extract the required formatted data
+        :param input_data: Input feature data
+        :param dimm_sn: DIMM serial number
+        :return: Parsed new formatted data, (DIMM serial number, DIMM location information, DIMM attribute information, fault log information)
         """
         dimm_key = None
         dimm_loc = None
@@ -232,12 +232,12 @@ class InputAdapter:
     @staticmethod
     def __make_item(log_item: Dict, dimm_key: str, dimm_loc: DIMM_LOCATION, paras: Dict) -> InputItem:
         """
-        对输入的当前内存日志及属性信息进行格式化，转为InputItem格式供后续推理及训练使用
-        :param log_item: 输入特征信息，格式为dict
-        :param dimm_key: 内存序列号
-        :param dimm_loc: 内存位置信息
-        :param paras: 内存静态属性信息
-        :return: 解析后特定的数据格式，格式为InputItem类别
+        Format the input DIMM log and attribute information into InputItem format for subsequent inference and training
+        :param log_item: Input feature information, format is dict
+        :param dimm_key: DIMM serial number
+        :param dimm_loc: DIMM location information
+        :param paras: DIMM static attribute information
+        :return: Parsed specific data format, format is InputItem type
         """
         parity_value = log_item.get("RetryRdErrLogParity")
         _bitmask = 0 if parity_value is None or np.isnan(float(parity_value)) else int(parity_value)
@@ -265,11 +265,11 @@ class InputAdapter:
     @staticmethod
     def convert(input_data: Union[List, Dict], dimm_sn: str, sample_count: int = 0) -> List[InputItem]:
         """
-        输入特征转换
-        :param input_data: 输入特征数据
-        :param dimm_sn: 内存序列号信息
-        :param sample_count: 采样数量
-        :return: 转换后内存特征信息
+        Input feature conversion
+        :param input_data: Input feature data
+        :param dimm_sn: DIMM serial number information
+        :param sample_count: Number of samples
+        :return: Converted DIMM feature information
         """
         std_input = []
         dimm_key, dimm_loc, paras, ce_log = InputAdapter.__process_input_data(input_data, dimm_sn)
@@ -301,10 +301,10 @@ class FeatureExtractor:
     def __default_feature_of_bit_mask(stat_features: bool = True,
                                       compare_features: bool = True) -> Dict:
         """
-        根据bit信息获取的默认特征
-        :param stat_features: 是否使用stat_feature
-        :param compare_features: 是否使用compare_features
-        :return: 默认bit_mask相关特征
+        Default features based on bit information
+        :param stat_features: Whether to use stat_feature
+        :param compare_features: Whether to use compare_features
+        :return: Default bit_mask related features
         """
         ret = {}
         if stat_features:
@@ -343,7 +343,7 @@ class FeatureExtractor:
     @property
     def __default_stat_of_bit_mask_feature(self) -> Dict:
         """
-        默认bit之间统计特征
+        Default statistics between bits
         """
         ret = {
             "bitmask_count": 0,
@@ -371,7 +371,7 @@ class FeatureExtractor:
     @property
     def __default_single_bitmask_feature(self) -> Dict:
         """
-        默认单bit相关特征
+        Default single bit related features
         """
         ret = {
             'timestamp': 0,
@@ -390,7 +390,7 @@ class FeatureExtractor:
     @property
     def __default_feature_of_addr(self) -> Dict:
         """
-        默认addr相关特征
+        Default addr related features
         """
         ret = {"AddrCnt(Rank)": 0,
                "AddrCnt(Bank)": 0,
@@ -400,7 +400,7 @@ class FeatureExtractor:
     @property
     def __default_feature_of_err_cnt(self) -> Dict:
         """
-        故障类型统计特征
+        Fault type statistics features
         """
         ret = {
             ERR_CNT_READ_FEATURE_NAME_6M: 1,
@@ -413,7 +413,7 @@ class FeatureExtractor:
     @property
     def __default_feature_of_rpt_cnt(self) -> Dict:
         """
-        默认重复统计特征
+        Default repeat count statistics features
         """
         ret = {
             RPT_CNT_READ_FEATURE_NAME_120H: 1,
@@ -426,7 +426,7 @@ class FeatureExtractor:
     @property
     def __default_feature_of_ce_storm_cnt_feature(self) -> Dict:
         """
-        默认ce风暴统计特征
+        Default CE storm statistics features
         """
         ret = {
             CE_STORM_CNT_CURRENT_FEATURE_NAME: 0,
@@ -437,9 +437,9 @@ class FeatureExtractor:
     @staticmethod
     def __prepare_bit_mask(bit_mask: int) -> Union[str, None]:
         """
-        获取bit mask信息
-        :param bit_mask: bit mask 信息
-        :return: 返回16进制筛选后的bit_mask信息，如'0x4000000'
+        Get bit mask information
+        :param bit_mask: Bit mask information
+        :return: Filtered bit_mask information in hexadecimal, such as '0x4000000'
         """
         if isinstance(bit_mask, int):
             bit_mask = hex(bit_mask)
@@ -451,7 +451,7 @@ class FeatureExtractor:
     @staticmethod
     def __update_inc_dec(stats: dict, operate: str, bm_feature: BitMaskFeature) -> None:
         """
-        增加或减少特征统计量函数
+        Add or subtract feature statistics function
         """
         if operate == '+':
             stats["bitmask_count"] += 1
@@ -481,9 +481,9 @@ class FeatureExtractor:
     @staticmethod
     def __update_compare(stats: dict, bm_feature: BitMaskFeature) -> None:
         """
-        根据当前bit mask特征进行比较并获取相关统计特征
-        :param stats: stats特征
-        :param bm_feature: bit_mask 特征
+        Compare and get related statistics based on current bit mask feature
+        :param stats: stats feature
+        :param bm_feature: bit_mask feature
         """
         if bm_feature.max_err_bits_per_burst > stats["MaxErrBitsPerBurst"]:
             stats["MaxErrBitsPerBurst"] = bm_feature.max_err_bits_per_burst
@@ -504,11 +504,11 @@ class FeatureExtractor:
     def __filter_events(event_list: List[MEM_ERR_EVENT], current_event: MEM_ERR_EVENT, window_size: int = 3600) -> List[
         MEM_ERR_EVENT]:
         """
-        对事件进行过滤，只取窗口内的事件
-        :param event_list: 事件列表
-        :param current_event: 当前事件
-        :param window_size: 事件过滤时间窗大小
-        :return: 过滤后的事件列表
+        Filter events, only take events within the window
+        :param event_list: Event list
+        :param current_event: Current event
+        :param window_size: Time window size for filtering events
+        :return: Filtered event list
         """
         cur_timestamp = current_event.timestamp
         ts_start = cur_timestamp - window_size
@@ -522,7 +522,7 @@ class FeatureExtractor:
     @staticmethod
     def get_dimm_feature_dict(current_features: Dict) -> Dict:
         """
-        获取当前内存的所有统计特征
+        Update addr type statistics features
         """
         feature_dict = {}
         for _group, _feature_values in current_features.items():
@@ -573,8 +573,8 @@ class FeatureExtractor:
 
     def __update_feature_of_addr(self, current_event: MEM_ERR_EVENT) -> None:
         """
-        更新addr类统计特征
-        :param current_event: 当前事件
+        Update addr type statistics features
+        :param current_event: Current event
         """
         self.addr_features['RankCnt'].add(current_event.phy_addr.rank)
         self.addr_features['BankCnt'].add(current_event.phy_addr.bank)
@@ -588,9 +588,9 @@ class FeatureExtractor:
     def __update_feature_of_bit_mask(self, current_event: MEM_ERR_EVENT,
                                      window_size=BIT_MASK_FEATURE_WINDOW_SIZE) -> None:
         """
-        更新bit mask相关统计特征
-        :param current_event: 当前事件
-        :param window_size: 处理事件的时间窗大小
+        Update bit mask related statistics features
+        :param current_event: Current event
+        :param window_size: Window size for processing events
         """
         updated_bitmask_features = self.current_features['ce_bit_mask']
         bitmask_stat = self.addr_ce_bit_mask_stat
@@ -661,9 +661,9 @@ class FeatureExtractor:
 
     def __update_feature_of_rpt_cnt(self, current_event: MEM_ERR_EVENT, evt_items: List[MEM_ERR_EVENT]) -> None:
         """
-        更新默认重复统计特征
-        :param current_event: 当前事件
-        :param evt_items: 滑动窗口内事件列表（120小时内所有CE事件）
+        Update repeat count statistics features
+        :param current_event: Current event
+        :param evt_items: Event list within the sliding window (all CE events within 120 hours)
         """
         _rpt_cnt_feature = self.__default_feature_of_rpt_cnt
         cur_ts = current_event.timestamp
@@ -685,9 +685,9 @@ class FeatureExtractor:
 
     def __update_feature_of_err_cnt(self, current_event: MEM_ERR_EVENT, evt_items: List[MEM_ERR_EVENT]) -> None:
         """
-        更新故障类型统计特征
-        :param current_event: 当前事件
-        :param evt_items: 滑动窗口内事件列表（120小时内所有CE事件）
+        Update fault type statistics features
+        :param current_event: Current event
+        :param evt_items: Event list within the sliding window (all CE events within 120 hours)
         """
         _err_cnt_feature = self.__default_feature_of_err_cnt
         cur_ts = current_event.timestamp
@@ -710,9 +710,9 @@ class FeatureExtractor:
     def __update_feature_of_ce_storm_cnt_feature(self, current_event: MEM_ERR_EVENT,
                                                  evt_items: List[MEM_ERR_EVENT]) -> None:
         """
-        更新ce风暴统计特征
-        :param current_event: 当前事件
-        :param evt_items: 滑动窗口内事件列表（120小时内所有CE事件）
+        Update CE storm statistics features
+        :param current_event: Current event
+        :param evt_items: Event list within the sliding window (all CE events within 120 hours)
         """
         ce_storm_cnt_feature = self.__default_feature_of_ce_storm_cnt_feature
         cur_ts = current_event.timestamp
