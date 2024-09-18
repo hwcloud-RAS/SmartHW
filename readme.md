@@ -22,14 +22,15 @@ Overall, the competition’s appeal lies in its practical relevance, the accessi
 <p style="font-size: 16px; line-height: 1.6;">
 **DRAM components and errors**: Figure 1 illustrates the DRAM organization within a server, where the basic unit of installation is a dual in-line memory module (DIMM). At a fundamental level, a DIMM consists of multiple DRAM chips grouped into ranks, enabling simultaneous access during DRAM read/write operations within the same rank. Each chip contains multiple banks that operate in parallel. These banks are further divided into rows and columns, with the intersection of a row and column constituting a cell capable of storing a single data bit. Cells can store multiple bits, and the data width of a chip denoted as x4, x8, or x16, signifies the number of data bits stored in a cell. A DRAM error occurs when the DRAM exhibits abnormal behavior, resulting in one or more bits being read differently from their written values [5]. Modern DRAM implementations utilize error-correcting codes (ECC) to safeguard against DRAM errors.
 </p>
-<img src="https://raw.githubusercontent.com/qiaoyu0747/Memory_failure-prediction_competition/main/mem_structure.jpg" width="600" style="display: block; margin: auto;" align="center">
+<p align="center">
+<img src="https://raw.githubusercontent.com/qiaoyu0747/Memory_failure-prediction_competition/main/mem_structure.jpg" width="600" style="display: block; margin: auto;">
 <p style="font-size: 16px; line-height: 1.6;" align="center">
   Figure 1: Memory Organization.
 </p>
 <p style="font-size: 16px; line-height: 1.6;">
 **Memory access and RAS**: Figure 2(2) depicts the transmission process of x4 DRAM Double Data Rate 4 (DDR4) chips via DQs. Upon initiating a data request, 8 beats each with 72 bits (64 data bits and 8 ECC bits) including ECC error codes are transferred to memory controller via DQ wires. Implementing the contemporary ECC [6], [27], 72-bit data are spread across 18 DRAM chips, allowing the memory controller to detect and correct them with ECC in Figure 2(3). Note that ECC checking bits addresses are decoded to locate specific errors in DQs and beats. Then, all these logs including error detection and correction, events, and memory specifications are archived in Baseboard Management Controller (BMC) in Figure 2(4). Utilizing memory failure prediction in Figure 2(5) allows for the prediction of failures and the activation of corresponding mitigation techniques in Figure 2(6) based on specific use cases.
 	</p>
-	
+<p align="center">	
 <img src="https://raw.githubusercontent.com/qiaoyu0747/Memory_failure-prediction_competition/main/mem_organization.jpg" width="800" style="display: block; margin: auto;" align="center">
 <p style="font-size: 16px; line-height: 1.6;" align="center">
   Figure 2: Memory Architecture, Access, and Mitigation Framework.
@@ -42,6 +43,7 @@ A True Positive (TP) is a correctly predicted failure within the prediction wind
 F − score = (1 + β2) Precision × Recall/β2 × Precision + Recall , (1)
 where Precision = TP/TP+FP , Recall = TP/TP+FN , and β is a hyperparameter to balance the precision and recall. When β = 1, it becomes the F1-Score, at this point both recall and precision are important with equal weight. In cases where we consider precision more important, we set β < 1, vice verse.
 </p>
+<p align="center">
 <img src="https://raw.githubusercontent.com/qiaoyu0747/Memory_failure-prediction_competition/main/evaluation_framework.png" width="600" style="display: block; margin: auto;" align="center">
 <p style="font-size: 16px; line-height: 1.6;" align="center">
 	<p style="font-size: 16px; line-height: 1.6;" align="center">
