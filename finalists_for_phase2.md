@@ -28,3 +28,6 @@
 | 26 | Comeback | xhxhx |
 | 27 | Perspolis | alinoshad |
 | 28 | AAA | lingxiao |
+
+![SmartHW WeChat Group](https://raw.githubusercontent.com/hwcloud-RAS/SmartHW/main/smartmem_wechat_group.jpg)
+
