@@ -29,5 +29,6 @@
 | 27 | Perspolis | alinoshad |
 | 28 | AAA | lingxiao |
 
-![SmartHW WeChat Group](https://raw.githubusercontent.com/hwcloud-RAS/SmartHW/main/smartmem_wechat_group.jpg)
+<img src="https://raw.githubusercontent.com/hwcloud-RAS/SmartHW/main/smartmem_wechat_group.jpg" alt="SmartHW WeChat Group" width="40%" />
+
 
